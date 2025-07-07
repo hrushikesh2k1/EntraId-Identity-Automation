@@ -1,2 +1,44 @@
 #create new user in entra id
-$tenant = "your_tenant_ID"
+$tenantId = "your_tenant_ID"
+$clientId=""
+$clientSecret=""
+
+#get access token 
+$body = @{
+    grant_type = "client_credentials"
+    scope = "https://graph.microsoft.com/.default"
+    client_id= $clientId
+    client_secret= $clientSecret
+}
+
+#call the microsoft token endpoint to get access token
+$tokenResponse= Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Body $body
+$accessToken = $tokenResponse.access_token
+
+#prepare http header with the token
+$headers=@{
+  Authorization = "Brearer $accessToken"
+  "Content-Type= "application/json"
+}
+
+#define user object to create
+$user=@(
+  accountEnabled=$true
+  dispplayName="Boora Hrushikesh"
+  mailNickname= "Hrushikesh.Boora"
+  userPrincipalName= "hrushikesh.boora@domain.onmicrosoftonline.com"
+  passwordProfile=@{
+    forceChangePasswordNextSignIn= $true
+    password="SecurePassword123!"
+}
+}
+
+#convert powershell object to JSON
+$jsonUser= $user |Convert-Json -Depth 10
+
+#send post request to create the user
+$response = Invoke-RestMethod -Method Post -Uri "https://graph.microsoft.com/v1.0/user" -Headers $headers -Body $jsonUser
+
+#output response
+Write-Host "User created successfully"
+$response
