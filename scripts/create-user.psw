@@ -1,0 +1,2 @@
+#create new user in entra id
+$tenant = "your_tenant_ID
