@@ -3,7 +3,7 @@ Import-Module ImportExcel
 $users= Import-Csv "./users.csv"
 $groups= Import-Csv "./groups.csv"
  
-$outputPath= "/Users/BO20374933/Desktop/output.xlsx"
+$outputPath= "/output.xlsx"
  
 foreach($group in $groups){
     $groupId=$group.Id
