@@ -1,0 +1,23 @@
+#Automate group membership cleanup and reporting
+ 
+#connecting to Entra ID
+Connect-MgGraph
+ 
+#get required group id
+$requiredGroupId = Get-MgGroup -All | Where-Object {$_.DisplayName -eq 'testgroup'} | Select-Object -Property Id
+ 
+#or we can user filter command to retrieve only selected group
+#Get-MgGroup -Filter "DisplayName eq 'testgroup'"
+ 
+#get group members
+$users = Get-MgGroupMember -GroupId $requiredGroupId.Id | Select-Object Id
+ 
+ 
+#iterating through users and finding which user account is disabled and thus removing user from group
+foreach($user in $users){
+    $status = Get-MgUser -UserId $user.Id -Property AccountEnabled | Select-Object AccountEnabled
+    if($status.AccountEnabled -eq 'False'){
+        Remove-MgGroupMemberByRef -GroupId $requiredGroupId.Id -DirectoryObjectId $user.Id
+        Write-Host "User $($user.Id) has been removed from group $requiredGroupId" -ForegroundColor Green
+    }
+}
