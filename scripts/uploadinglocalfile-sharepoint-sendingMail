@@ -1,0 +1,64 @@
+#Uploading the local file output to sharepoint site and sending a mail simultaneously
+#Note:
+        #1. your admin account should be a member/owner of the sharePoint site where you are uploading
+        #2. For the first time when sending mail, the script will ask to create a Datafile in local. select yes and set a password and check the box which says to store password
+#________Sharepoint upload script variables_______
+ 
+$sharePointUrl = ""
+$localFilePath=""
+#________Email script variables_________________________
+$toEmail = ""
+$cc=""
+$subject = ""
+$body = ""
+ 
+# --- Start SharePoint Upload Job ---
+ 
+Write-Host "Starting SharePoint upload job..."
+ 
+$sharePointJob = Start-Job -ScriptBlock {
+    param($sharePointSiteUrl, $filerep, $loc)
+           try{
+            Connect-PnPOnline -Url $sharePointSiteUrl -useweblogin 
+            #Uploading the file
+            Add-PnPFile -Path $loc\$filerep -Folder "Shared Documents"
+            return "File successfully uploaded to SharePoint."
+            }
+ 
+            catch {
+            return "Error uploading file to SharePoint: $_"
+            } 
+}-ArgumentList $sharePointSiteUrl, $filerep, $loc
+ 
+# --- Start Email Send Job ---
+Write-Host "Starting email send job..."
+$emailJob = Start-Job -ScriptBlock {
+    param ($toEmail, $subject, $body, $cc)
+        try {
+        $outlook = New-Object -ComObject Outlook.Application
+        $mail = $outlook.CreateItem(0)
+        $mail.To = $toEmail
+        $mail.Subject = $subject
+        $mail.Body = $body
+        $mail.Display() # or $mail.Send() for automatic sending
+        return "Email created and displayed for sending."
+        } 
+        catch{
+        return "Error sending email: $_"
+        }
+}-ArgumentList $toEmail, $subject, $body, $cc
+ 
+# --- Wait for both jobs to complete ---
+ 
+Write-Host "Waiting for both jobs to finish..." 
+Wait-Job $sharePointJob, $emailJob | Out-Null
+ 
+# --- Get the results
+ 
+$sharePointResult = Receive-Job $sharePointJob
+$emailResult = Receive-Job $emailJob
+ 
+Write-Host $sharePointResult
+Write-Host $emailResult
+ 
+Remove-Job $sharePointJob, $emailJob
