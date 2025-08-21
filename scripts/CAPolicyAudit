@@ -1,0 +1,49 @@
+Import-Module Microsoft.Graph
+ 
+Connect-MgGraph -Scopes "Policy.ReadWrite.ConditionalAccess", "AuditLog.Read.All"
+ 
+#top 10 CA policy failures
+ 
+#fetch last 7 days sign in logs
+$signIns = Get-MgAuditLogSignIn -Top 1000| Where-Object {$_.CreatedDateTime -gt (Get-Date).AddDays(-7)}
+ 
+#Initialize an array to store faield CA policy names
+$failedPolicies =@()
+ 
+foreach($signin in $signIns){
+    if($signin.ConditionalAccessStatus -eq 'failed'){
+        foreach($policy in $signin.AppliedConditionalAccessPolicies){
+            $failedSignIns += $policy.DisplayName
+        }
+    }
+}
+ 
+$failedPolicyStats = $failedPolicies | Group-Object | Sort-Object -Descending
+ 
+$top10FailedPolicies = $failedPolicyStats | Select-Object Name, Count -First 10
+ 
+$top10FailedPolicies | Format-Table -AutoSize
+ 
+$top10FailedPolicies | Export-Csv "./" -NoTypeInformation
+ 
+ 
+<# Script to find the top 10 users facing high amount 
+of sign-in failures/Blocked sign-in and finding out
+the CA policy that is blocking the access
+#>
+ 
+#Filter sign-ins with failed conditional access enforcement
+$failedSignIns = $signIns | Where-Object {$_.ConditionalAccessStatus -eq 'success'}
+ 
+$failedData=foreach($signin in $failedSignIns){
+                foreach($policy in $signin.AppliedConditionalAccessPolicies){
+                    [PSCustomObject]@{
+                        UserPrincipalName = $signin.UserPrincipalName
+                        PolicyName = $policy.DisplayName
+                        FailureDate = $signin.CreatedDateTime
+                    }
+            }
+} 
+$groupedFailures = $failedData | Group-Object UserPrincipalName, PolicyName | Sort-Object Count -Descending
+ 
+$groupedFailures | Export-Csv -Path "./" -NoTypeInformation
