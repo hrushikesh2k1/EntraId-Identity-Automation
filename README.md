@@ -5,6 +5,7 @@
    This repository contains Powershell scripts and modules focused on Identity and Access Management (IAM) automation. The scripts utilize microsoft Grpah PowerShell SDK to automate the management of Users, Groups, and permissions in Active directoy environment.
 
 ##Prerequisites
+
 -Windows PowerShell 5.1 or PowerShell 7+
 -Microsoft Graph PowerShell SDK installed (for Azure AD operations).
 -Appropriate permissions to manage Azure AD objects.
