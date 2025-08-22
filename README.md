@@ -13,12 +13,17 @@
 -Appropriate permissions to manage Azure AD objects.
 
 
+
 ##Contributions
 
 Contributions are welcome! Please follow these steps:
+
 -Fork the repository.
+
 -Create a new feature branch.
+
 -Submit a pull request describing your enhancement or fix.
+
 
 ---------
 For detailed documentation of each script and module, refer to the 
