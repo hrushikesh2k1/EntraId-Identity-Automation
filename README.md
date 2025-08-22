@@ -6,9 +6,12 @@
 
 ##Prerequisites
 
--Windows PowerShell 5.1 or PowerShell 7+
+-Windows PowerShell 5.1 or PowerShell 7+.
+
 -Microsoft Graph PowerShell SDK installed (for Azure AD operations).
+
 -Appropriate permissions to manage Azure AD objects.
+
 
 ##Contributions
 
